@@ -89,15 +89,15 @@ void breath(){
     leds[i] = COLOURS[selected_colour];
   }
 
-  for (int i = min_brightness; i < max_brightness; i++){    
-    FastLED.setBrightness(i);
+  for (int i = min_brightness; i < max_brightness/2; i++){    
+    FastLED.setBrightness(i*2);
     FastLED.show();
     if (change_program(program)) {
       return;
     }
   }
-  for (int i = min_brightness; i < max_brightness; i++){    
-    FastLED.setBrightness(max_brightness + min_brightness - 1 - i);
+  for (int i = min_brightness; i < max_brightness/2; i++){    
+    FastLED.setBrightness(max_brightness + min_brightness - 1 - i*2);
     FastLED.show();
     if (change_program(program)) {
       return;
@@ -120,29 +120,47 @@ void spread_colour(CRGB colour){
   new_colour();
 }
 
-//Fire program
-void fire(){
-  spread_colour(0xFDCF58);
-  spread_colour(0xf27d0c);
-  spread_colour(0x800909);
-  spread_colour(0xf07f13);
+void line_forward() {
+  for (int i = 0; i < leds_amount; i++){
+    leds[i] = COLOURS[selected_colour];
+    delay(25);
+    FastLED.show();
+    if (change_program(program)) {
+      return;
+    }
+  }
+  for (int i = 0; i < leds_amount; i++){
+    leds[i] = CRGB::Black;
+    delay(25);
+    FastLED.show();
+    if (change_program(program)) {
+      return;
+    }
+  }
 }
 
 void run_dot_direction(int &step, bool &direction){
   leds[step] = CRGB::Black;
+  int step_size = 2;
   if (direction){
     step++;
-    if (step == leds_amount - 1){
+    if (step + step_size == leds_amount){
+        step = leds_amount -1;
         direction = false;
+    } else {
+        leds[step + step_size] = COLOURS[selected_colour];
     }
   } else {
     step--;
-    if (step == 0){
+    if (step - step_size < 0){
+        step = 0;
         direction = true;
         new_colour();
+    } else {
+        leds[step - step_size] = COLOURS[selected_colour];
     }
   }
-  leds[step] = COLOURS[selected_colour];
+  
 }
 
 void dots(){
@@ -155,7 +173,7 @@ void dots(){
   run_dot_direction(dot2_step, dot2_direction);
 
   FastLED.show();
-  delay(25);
+  delay(35);
   if (change_program(program)) {
     return;
   }
@@ -184,14 +202,14 @@ void loop() {
       breath();
       break;
     case 2:
-      fire();
-      break;
-    case 3:
       trail();
       break;
-    case 4:
+    case 3:
       spread_colour(COLOURS[selected_colour]);
+      spread_colour(CRGB::Black);
       break;
+    case 4:
+      line_forward();
     default:
       break;
   }
