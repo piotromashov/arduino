@@ -17,7 +17,7 @@ const int maximum = 149;
 const int minimum = 0;
 int selected_colour;
 int program = 0;
-const int total_programs = 3;
+const int total_programs = 5;
 
 // breath program
 const int max_brightness = 255;
@@ -44,18 +44,18 @@ bool change_program(int &program) {
     // Serial.println(" cm");
     //change to next program on activation
     program = (program + 1) % total_programs;
-    delay(1000);
+    delay(600);
     FastLED.setBrightness(max_brightness);
     return true;
   }
   return false;
 }
 
-void new_colour(int &selected_colour) {
+void new_colour() {
   selected_colour = random(minimum, maximum);
 }
 
-void trail(int &selected_colour) {
+void trail() {
   const int trail_size = 5;
 
   for (int i = 0; i < leds_amount; i++){
@@ -80,10 +80,11 @@ void trail(int &selected_colour) {
       return;
     }
   }
+  new_colour();
 }
 
 //breath program
-void breath(int &selected_colour){  
+void breath(){  
   for (int i = 0; i < leds_amount; i++){
     leds[i] = COLOURS[selected_colour];
   }
@@ -102,10 +103,10 @@ void breath(int &selected_colour){
       return;
     }
   }
-  new_colour(selected_colour);
+  new_colour();
 }
 
-void spread_colour(CRGB colour, CRGB leds[]){
+void spread_colour(CRGB colour){
   int center = leds_amount/2;
   for (int i = 0; i < center; i++){
     leds[center + i] = colour;
@@ -116,17 +117,18 @@ void spread_colour(CRGB colour, CRGB leds[]){
       return;
     }
   }
+  new_colour();
 }
 
 //Fire program
-void fire(int &selected_color){
-  spread_colour(0xFDCF58, leds);
-  spread_colour(0xf27d0c, leds);
-  spread_colour(0x800909, leds);
-  spread_colour(0xf07f13, leds);
+void fire(){
+  spread_colour(0xFDCF58);
+  spread_colour(0xf27d0c);
+  spread_colour(0x800909);
+  spread_colour(0xf07f13);
 }
 
-void run_dot_direction(int &selected_colour, int &step, bool &direction){
+void run_dot_direction(int &step, bool &direction){
   leds[step] = CRGB::Black;
   if (direction){
     step++;
@@ -137,20 +139,20 @@ void run_dot_direction(int &selected_colour, int &step, bool &direction){
     step--;
     if (step == 0){
         direction = true;
-        new_colour(selected_colour);
+        new_colour();
     }
   }
   leds[step] = COLOURS[selected_colour];
 }
 
-void dots(int &selected_colour){
+void dots(){
   static int dot1_step = 0;
   static bool dot1_direction = true;
   static int dot2_step = leds_amount;
   static bool dot2_direction = false;
 
-  run_dot_direction(selected_colour, dot1_step, dot1_direction);
-  run_dot_direction(selected_colour, dot2_step, dot2_direction);
+  run_dot_direction(dot1_step, dot1_direction);
+  run_dot_direction(dot2_step, dot2_direction);
 
   FastLED.show();
   delay(25);
@@ -176,16 +178,19 @@ void loop() {
   Serial.println(selected_colour);
   switch (program) {
     case 0:
-      dots(selected_colour);
+      dots();
       break;
     case 1:
-      breath(selected_colour);
+      breath();
       break;
     case 2:
-      fire(selected_colour);
+      fire();
       break;
     case 3:
-      trail(selected_colour);
+      trail();
+      break;
+    case 4:
+      spread_colour(COLOURS[selected_colour]);
       break;
     default:
       break;
