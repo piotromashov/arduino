@@ -123,7 +123,6 @@ void spread_colour(CRGB colour){
 void line_forward() {
   for (int i = 0; i < leds_amount; i++){
     leds[i] = COLOURS[selected_colour];
-    delay(25);
     FastLED.show();
     if (change_program(program)) {
       return;
@@ -131,7 +130,7 @@ void line_forward() {
   }
   for (int i = 0; i < leds_amount; i++){
     leds[i] = CRGB::Black;
-    delay(25);
+    delay(15);
     FastLED.show();
     if (change_program(program)) {
       return;
@@ -173,7 +172,7 @@ void dots(){
   run_dot_direction(dot2_step, dot2_direction);
 
   FastLED.show();
-  delay(35);
+  delay(random(10, 40));
   if (change_program(program)) {
     return;
   }
