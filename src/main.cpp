@@ -57,27 +57,81 @@ Arduino - RGB
 Arduino -  Inputs
 */
 
-int ledPin = 7;
-int buttonApin = 5;
-int buttonBpin = 4;
+// int ledPin = 7;
+// int buttonApin = 5;
+// int buttonBpin = 4;
 
-byte leds = 0;
+// byte leds = 0;
+
+// void setup() 
+// {
+//   pinMode(ledPin, OUTPUT);
+//   pinMode(buttonApin, INPUT_PULLUP);  
+//   pinMode(buttonBpin, INPUT_PULLUP);  
+// }
+
+// void loop() 
+// {
+//   if (digitalRead(buttonApin) == LOW)
+//   {
+//     digitalWrite(ledPin, HIGH);
+//   } else {
+//     digitalWrite(ledPin, LOW);
+//   }
+
+//   if (digitalRead(buttonBpin) == LOW)
+//   {
+//     digitalWrite(ledPin, HIGH);
+//     delay(5);
+//     digitalWrite(ledPin, LOW);
+//     delay(100);
+//     digitalWrite(ledPin, HIGH);
+//     delay(5);
+//   } else {
+//     digitalWrite(ledPin, LOW);
+//   }
+// }
+
+/*
+* Arduino - Ultrasonic range detector
+https://create.arduino.cc/projecthub/rztronics/ultrasonic-range-detector-using-arduino-and-sr-04f-8a804d?ref=tag&ref_id=sensor&offset=16
+*/
+
+#define trigPin 13
+#define echoPin 12
+#define ledPin 7
 
 void setup() 
 {
+  Serial.begin (9600);
   pinMode(ledPin, OUTPUT);
-  pinMode(buttonApin, INPUT_PULLUP);  
-  pinMode(buttonBpin, INPUT_PULLUP);  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 }
 
-void loop() 
-{
-  if (digitalRead(buttonApin) == LOW)
+void loop() {
+  long duration, distance;
+  digitalWrite(trigPin, LOW);        
+  delayMicroseconds(2);              
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);           
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration/2) / 29.1;
+  int max_distance = 50;
+
+  if (distance >=max_distance  || distance <= 0)
   {
-    digitalWrite(ledPin, HIGH);
-  }
-  if (digitalRead(buttonBpin) == LOW)
-  {
+    Serial.print("Out of range ");
+    Serial.println(distance);
     digitalWrite(ledPin, LOW);
   }
+  else 
+  {
+    int lightIntensityPercentage = max_distance - distance;
+    Serial.print(distance);
+    Serial.println(" cm");
+    analogWrite(ledPin, 255*lightIntensityPercentage/100);
+  }
+  delay(5);
 }
