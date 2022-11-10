@@ -45,13 +45,17 @@ bool change_program(int &program) {
     //change to next program on activation
     program = (program + 1) % total_programs;
     delay(1000);
+    FastLED.setBrightness(max_brightness);
     return true;
   }
   return false;
 }
 
+void new_colour(int &selected_color) {
+  selected_color = random(minimum, maximum);
+}
+
 void trail(int &selected_color) {
-  FastLED.setBrightness(max_brightness);
   const int trail_size = 5;
 
   for (int i = 0; i < leds_amount; i++){
@@ -98,6 +102,7 @@ void breath(int &selected_color){
       return;
     }
   }
+  new_colour(selected_color);
 }
 
 void spread_color(CRGB color, CRGB leds[]){
@@ -118,36 +123,69 @@ void fire(int &selected_color){
   spread_color(0xFDCF58, leds);
   spread_color(0xf27d0c, leds);
   spread_color(0x800909, leds);
-  spread_color(0xf07f13, leds);  
+  spread_color(0xf07f13, leds);
+}
+
+void run_dot_direction(int &selected_color, int &step, bool &direction){
+  leds[step] = CRGB::Black;
+  if (direction){
+    step++;
+    if (step == leds_amount - 1){
+        direction = false;
+    }
+  } else {
+    step--;
+    if (step == 0){
+        direction = true;
+        new_colour(selected_color);
+    }
+  }
+  leds[step] = COLORS[selected_color];
+}
+
+void dots(int &selected_color){
+  static int dot1_step = 0;
+  static bool dot1_direction = true;
+  static int dot2_step = leds_amount;
+  static bool dot2_direction = false;
+
+  run_dot_direction(selected_color, dot1_step, dot1_direction);
+  run_dot_direction(selected_color, dot2_step, dot2_direction);
+
+  FastLED.show();
+  delay(25);
+  if (change_program(program)) {
+    return;
+  }
 }
 
 void setup() 
 {
-  Serial.begin (9600);
+  Serial.begin(9600);
   pinMode(ledPin, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   LEDS.addLeds<WS2812B,DATA_PIN, RGB>(leds, leds_amount);
   // FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, leds_amount);
 }
-void loop() 
-{
+void loop() {
   //debug purposes
   Serial.print("Program ");
   Serial.print(program);
-  selected_color = rand() % maximum;
   Serial.print(". Selected color ");
   Serial.println(selected_color);
-
   switch (program) {
     case 0:
-      trail(selected_color);
+      dots(selected_color);
       break;
     case 1:
       breath(selected_color);
       break;
     case 2:
       fire(selected_color);
+      break;
+    case 3:
+      trail(selected_color);
       break;
     default:
       break;
